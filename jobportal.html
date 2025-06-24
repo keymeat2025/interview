@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Portal Security Design - Complete Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.2);
+            height: 6px;
+            border-radius: 3px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: #4CAF50;
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.5);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn.active {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            box-shadow: 0 4px 15px rgba(76,175,80,0.3);
+        }
+
+        .content-area {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            min-height: 500px;
+        }
+
+        .stage {
+            display: none;
+        }
+
+        .stage.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stage h2 {
+            color: #2a5298;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .framework-box {
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            border-left: 5px solid #4CAF50;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .framework-title {
+            font-weight: bold;
+            color: #2a5298;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .threat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .threat-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .threat-card:hover {
+            border-color: #4CAF50;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .threat-title {
+            font-weight: bold;
+            color: #dc3545;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .control-title {
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .security-title {
+            font-weight: bold;
+            color: #2a5298;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .architecture-layer {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 5px solid #ffd700;
+        }
+
+        .metric-category {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .control-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
+        .control-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .example-scenario {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .memory-aid {
+            background: #e8f5e8;
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
+        ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        li {
+            margin: 6px 0;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .navigation {
+                gap: 5px;
+            }
+            
+            .nav-btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+            
+            .content-area {
+                padding: 20px;
+            }
+
+            .threat-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Job Portal Security Design Guide</h1>
+            <p>Complete security architecture for job search platforms</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-btn active" onclick="showStage(0)">Scenario</button>
+            <button class="nav-btn" onclick="showStage(1)">BRAT-TA</button>
+            <button class="nav-btn" onclick="showStage(2)">CIA-AAA</button>
+            <button class="nav-btn" onclick="showStage(3)">STRIDE</button>
+            <button class="nav-btn" onclick="showStage(4)">Controls</button>
+            <button class="nav-btn" onclick="showStage(5)">Architecture</button>
+            <button class="nav-btn" onclick="showStage(6)">Scaling</button>
+            <button class="nav-btn" onclick="showStage(7)">Compliance</button>
+            <button class="nav-btn" onclick="showStage(8)">Response</button>
+            <button class="nav-btn" onclick="showStage(9)">Metrics</button>
+            <button class="nav-btn" onclick="showStage(10)">Memory</button>
+        </div>
+
+        <div class="content-area">
+            <!-- Stage 0: Scenario -->
+            <div class="stage active" id="stage0">
+                <h2>🎯 Interview Scenario: Job Portal Security Design</h2>
+                
+                <div class="example-scenario">
+                    <h3>📋 The Challenge</h3>
+                    <p><strong>"Design a comprehensive security architecture for a global job portal platform like Indeed/LinkedIn Jobs. The platform handles millions of job seekers, thousands of employers, processes resumes, salary data, and facilitates hiring. It must protect personal information, prevent fraud, and comply with global privacy regulations."</strong></p>
+                </div>
+
+                <div class="threat-grid">
+                    <div class="threat-card">
+                        <div class="security-title">🎯 Key Business Requirements</div>
+                        <ul>
+                            <li>300M+ monthly active job seekers</li>
+                            <li>5M+ employer accounts globally</li>
+                            <li>Real-time job search and matching</li>
+                            <li>Mobile-first (70% mobile traffic)</li>
+                            <li>Global presence (60+ countries)</li>
+                            <li>Revenue from job postings & subscriptions</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">💎 Critical Assets to Protect</div>
+                        <ul>
+                            <li>Personal resumes and CVs</li>
+                            <li>Contact information & employment history</li>
+                            <li>Salary and compensation data</li>
+                            <li>Job application records</li>
+                            <li>Employer hiring patterns</li>
+                            <li>Search algorithms & ML models</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">👥 User Types & Access Needs</div>
+                        <ul>
+                            <li><strong>Job Seekers:</strong> Profile management, job search</li>
+                            <li><strong>Employers:</strong> Job posting, candidate review</li>
+                            <li><strong>Recruiters:</strong> Advanced search, bulk operations</li>
+                            <li><strong>Admins:</strong> Platform management</li>
+                            <li><strong>Analytics Team:</strong> Aggregate data analysis</li>
+                            <li><strong>Third-party APIs:</strong> Integration partners</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">⚠️ Key Threat Actors</div>
+                        <ul>
+                            <li><strong>Data Harvesters:</strong> Competitors scraping job/salary data</li>
+                            <li><strong>Identity Thieves:</strong> Criminals stealing resume data</li>
+                            <li><strong>Fake Employers:</strong> Scammers collecting personal info</li>
+                            <li><strong>Insider Threats:</strong> Employees accessing personal data</li>
+                            <li><strong>Nation States:</strong> Economic intelligence gathering</li>
+                            <li><strong>Automated Bots:</strong> Scraping and spam operations</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight">
+                    <strong>💡 Why Job Portals Are High-Value Targets:</strong>
+                    <ul>
+                        <li><strong>Massive Personal Data:</strong> Millions of detailed resumes with PII</li>
+                        <li><strong>Economic Intelligence:</strong> Job market trends and salary data</li>
+                        <li><strong>Identity Theft Goldmine:</strong> Complete professional profiles</li>
+                        <li><strong>Business Intelligence:</strong> Company hiring patterns and strategies</li>
+                        <li><strong>Social Engineering Data:</strong> Professional networks and relationships</li>
+                    </ul>
+                </div>
+
+                <div class="framework-box">
+                    <div class="framework-title">🗺️ Security Design Approach</div>
+                    <p>We'll systematically work through:</p>
+                    <ol>
+                        <li><strong>BRAT-TA Analysis</strong> - Understand business context and requirements</li>
+                        <li><strong>CIA-AAA Objectives</strong> - Define security goals for job portal data</li>
+                        <li><strong>STRIDE Threats</strong> - Identify specific attack vectors</li>
+                        <li><strong>Security Controls</strong> - Design protective measures</li>
+                        <li><strong>Defense Architecture</strong> - Build layered security</li>
+                        <li><strong>Scaling Strategy</strong> - Handle millions of users</li>
+                        <li><strong>Global Compliance</strong> - Meet international privacy laws</li>
+                        <li><strong>Incident Response</strong> - Handle security breaches</li>
+                        <li><strong>Success Metrics</strong> - Measure security effectiveness</li>
+                        <li><strong>Memory Framework</strong> - Easy recall for interviews</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Stage 1: BRAT-TA -->
+            <div class="stage" id="stage1">
+                <h2>📝 BRAT-TA Analysis for Job Portal</h2>
+                
+                <div class="memory-aid">
+                    Memory Aid: "Before Really Assessing Threats, Trust Architecture"<br>
+                    <strong>B</strong>usiness - <strong>R</strong>egulations - <strong>A</strong>ssets - <strong>T</strong>hreats - <strong>T</strong>rust - <strong>A</strong>rchitecture
+                </div>
+
+                <div class="threat-grid">
+                    <div class="threat-card">
+                        <div class="security-title">🏢 B - Business Context</div>
+                        <ul>
+                            <li><strong>Scale:</strong> 300M+ users, 5M+ employers</li>
+                            <li><strong>Revenue:</strong> Job posting fees, premium subscriptions</li>
+                            <li><strong>Geography:</strong> 60+ countries, local employment laws</li>
+                            <li><strong>Competition:</strong> LinkedIn, ZipRecruiter, Monster</li>
+                            <li><strong>Peak Traffic:</strong> Monday mornings, economic events</li>
+                            <li><strong>Business Model:</strong> Freemium with paid employer features</li>
+                            <li><strong>Risk Tolerance:</strong> Low - reputation critical</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="security-title">📋 R - Regulatory Requirements</div>
+                        <ul>
+                            <li><strong>GDPR (EU):</strong> Right to erasure, data portability, consent</li>
+                            <li><strong>CCPA (California):</strong> Consumer privacy rights, opt-out</li>
+                            <li><strong>PIPEDA (Canada):</strong> Privacy breach notification</li>
+                            <li><strong>SOC 2 Type II:</strong> Security and availability controls</li>
+                            <li><strong>Employment Laws:</strong> Anti-discrimination compliance</li>
+                            <li><strong>Data Residency:</strong> Local storage requirements</li>
+                            <li><strong>Industry Standards:</strong> ISO 27001, NIST framework</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="security-title">💎 A - Critical Assets</div>
+                        <ul>
+                            <li><strong>Personal Data:</strong> Resumes, contact info, work history</li>
+                            <li><strong>Salary Intelligence:</strong> Compensation data, market rates</li>
+                            <li><strong>Behavioral Data:</strong> Search patterns, application history</li>
+                            <li><strong>Employer Data:</strong> Company profiles, hiring patterns</li>
+                            <li><strong>Business Intelligence:</strong> Job market analytics, trends</li>
+                            <li><strong>Intellectual Property:</strong> Matching algorithms, ML models</li>
+                            <li><strong>Platform Reputation:</strong> User trust and brand value</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">⚠️ T - Threat Landscape</div>
+                        <ul>
+                            <li><strong>External Attackers:</strong> Cybercriminals, data brokers</li>
+                            <li><strong>Competitors:</strong> Scraping job and salary data</li>
+                            <li><strong>Fake Employers:</strong> Scammers collecting personal data</li>
+                            <li><strong>Insider Threats:</strong> Employees with data access</li>
+                            <li><strong>Nation-State Actors:</strong> Economic espionage</li>
+                            <li><strong>Automated Bots:</strong> Mass data harvesting</li>
+                            <li><strong>Social Engineers:</strong> Targeting HR professionals</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="security-title">🔐 T - Trust Boundaries</div>
+                        <ul>
+                            <li><strong>Job Seekers:</strong> Own profile data only</li>
+                            <li><strong>Employers:</strong> Posted jobs + applicant data</li>
+                            <li><strong>Recruiters:</strong> Extended search privileges</li>
+                            <li><strong>Premium Users:</strong> Advanced features access</li>
+                            <li><strong>Platform Admins:</strong> System management, limited data</li>
+                            <li><strong>Analytics Team:</strong> Anonymized aggregate data</li>
+                            <li><strong>Third-party APIs:</strong> Specific integration scope</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="security-title">🏗️ A - Architecture Approach</div>
+                        <ul>
+                            <li><strong>Cloud Strategy:</strong> Multi-region public cloud</li>
+                            <li><strong>Service Architecture:</strong> Microservices with APIs</li>
+                            <li><strong>Data Strategy:</strong> Distributed with regional compliance</li>
+                            <li><strong>Mobile Priority:</strong> API-first for mobile apps</li>
+                            <li><strong>AI/ML Integration:</strong> Real-time matching and recommendations</li>
+                            <li><strong>Global Scale:</strong> CDN and edge computing</li>
+                            <li><strong>Privacy by Design:</strong> Built-in data protection</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight">
+                    <strong>🎯 Key Questions Asked:</strong>
+                    <ul>
+                        <li>"What's the expected user growth over the next 3 years?"</li>
+                        <li>"Which countries/regions are we planning to expand to?"</li>
+                        <li>"What's our risk tolerance for data breaches vs. user experience?"</li>
+                        <li>"Do we process any payments directly or just facilitate connections?"</li>
+                        <li>"What's our current security team size and expertise level?"</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Stage 2: CIA-AAA -->
+            <div class="stage" id="stage2">
+                <h2>🎯 CIA-AAA Security Objectives</h2>
+                
+                <div class="memory-aid">
+                    Memory Aid: "CIA Agents Always Authenticate"<br>
+                    <strong>C</strong>onfidentiality - <strong>I</strong>ntegrity - <strong>A</strong>vailability<br>
+                    <strong>A</strong>uthentication - <strong>A</strong>uthorization - <strong>A</strong>uditing
+                </div>
+
+                <div class="threat-grid">
+                    <div class="threat-card">
+                        <div class="control-title">🔒 Confidentiality Goals</div>
+                        <p><strong>Keep sensitive data secret from unauthorized parties</strong></p>
+                        <ul>
+                            <li><strong>Resume Data:</strong> Personal contact info, work history</li>
+                            <li><strong>Salary Information:</strong> Compensation data, pay ranges</li>
+                            <li><strong>Search Behavior:</strong> Job preferences, application patterns</li>
+                            <li><strong>Employer Intelligence:</strong> Hiring patterns, company data</li>
+                            <li><strong>Communications:</strong> Messages between users</li>
+                            <li><strong>Algorithm Secrets:</strong> Matching and ranking models</li>
+                        </ul>
+                        <div style="margin-top: 10px; padding: 8px; background: #fff3cd; border-radius: 5px;">
+                            <strong>Impact:</strong> Hiring fraud, market manipulation, legal liability
+                        </div>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">🚫 R - Repudiation Threats</div>
+                        <p><strong>Denying actions or transactions occurred</strong></p>
+                        <ul>
+                            <li><strong>Application Denial:</strong> "I never applied for this job"</li>
+                            <li><strong>Hiring Decision Disputes:</strong> "We never rejected this candidate"</li>
+                            <li><strong>Data Access Denial:</strong> "We never viewed this resume"</li>
+                            <li><strong>Policy Violation Denial:</strong> "We never scraped data"</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">📤 I - Information Disclosure</div>
+                        <p><strong>Unauthorized access to confidential data</strong></p>
+                        <ul>
+                            <li><strong>Resume Database Breach:</strong> Mass download of personal data</li>
+                            <li><strong>Salary Data Exposure:</strong> Compensation intelligence theft</li>
+                            <li><strong>API Data Leakage:</strong> Excessive data in API responses</li>
+                            <li><strong>Search Query Mining:</strong> Behavioral pattern analysis</li>
+                            <li><strong>Employer Intelligence:</strong> Hiring patterns and strategies</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">💥 D - Denial of Service</div>
+                        <p><strong>Making systems unavailable</strong></p>
+                        <ul>
+                            <li><strong>DDoS Attacks:</strong> Overwhelming traffic during peak times</li>
+                            <li><strong>Search Exhaustion:</strong> Resource-intensive queries</li>
+                            <li><strong>Database Overload:</strong> Complex resume matching operations</li>
+                            <li><strong>API Rate Abuse:</strong> Excessive automated requests</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">⬆️ E - Elevation of Privilege</div>
+                        <p><strong>Gaining unauthorized higher access levels</strong></p>
+                        <ul>
+                            <li><strong>Job Seeker → Employer:</strong> Unauthorized company account access</li>
+                            <li><strong>Basic → Premium:</strong> Accessing paid features without subscription</li>
+                            <li><strong>User → Admin:</strong> Platform administration privileges</li>
+                            <li><strong>API Privilege Escalation:</strong> Accessing restricted endpoints</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stage 4: Controls -->
+            <div class="stage" id="stage4">
+                <h2>🛡️ Security Controls Design</h2>
+                
+                <div class="threat-grid">
+                    <div class="threat-card">
+                        <div class="control-title">🔐 Anti-Spoofing Controls</div>
+                        <ul>
+                            <li><strong>Email Verification:</strong> Mandatory for all accounts</li>
+                            <li><strong>Business Verification:</strong> Employer legitimacy checks</li>
+                            <li><strong>Multi-Factor Authentication:</strong> SMS/app for employers</li>
+                            <li><strong>Device Fingerprinting:</strong> Detect suspicious logins</li>
+                            <li><strong>CAPTCHA Systems:</strong> Bot prevention</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">✅ Anti-Tampering Controls</div>
+                        <ul>
+                            <li><strong>Input Validation:</strong> Resume and job post sanitization</li>
+                            <li><strong>Digital Signatures:</strong> Critical data integrity</li>
+                            <li><strong>Change Auditing:</strong> Track all modifications</li>
+                            <li><strong>Version Control:</strong> Resume change history</li>
+                            <li><strong>Content Moderation:</strong> AI-powered fake detection</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">📋 Non-Repudiation Controls</div>
+                        <ul>
+                            <li><strong>Comprehensive Logging:</strong> All user actions tracked</li>
+                            <li><strong>Digital Timestamps:</strong> Cryptographic proof</li>
+                            <li><strong>Email Confirmations:</strong> Application receipts</li>
+                            <li><strong>Legal Agreements:</strong> Terms acceptance tracking</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🔒 Information Protection</div>
+                        <ul>
+                            <li><strong>Field-Level Encryption:</strong> Resume PII encrypted</li>
+                            <li><strong>Data Classification:</strong> Public vs private data</li>
+                            <li><strong>Access Controls:</strong> Need-to-know basis</li>
+                            <li><strong>Data Masking:</strong> Analytics on anonymized data</li>
+                            <li><strong>API Security:</strong> Rate limiting and authentication</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🌐 Availability Protection</div>
+                        <ul>
+                            <li><strong>CDN Distribution:</strong> Global content delivery</li>
+                            <li><strong>Auto-Scaling:</strong> Handle traffic spikes</li>
+                            <li><strong>DDoS Protection:</strong> Cloud-based mitigation</li>
+                            <li><strong>Database Replication:</strong> Multiple data centers</li>
+                            <li><strong>Health Monitoring:</strong> Proactive issue detection</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🚪 Access Control Systems</div>
+                        <ul>
+                            <li><strong>Role-Based Access:</strong> Job seeker, employer, admin roles</li>
+                            <li><strong>Least Privilege:</strong> Minimal necessary permissions</li>
+                            <li><strong>Session Management:</strong> Timeout and secure cookies</li>
+                            <li><strong>API Rate Limiting:</strong> Prevent abuse and scraping</li>
+                            <li><strong>Privileged Access Management:</strong> Admin oversight</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stage 5: Architecture -->
+            <div class="stage" id="stage5">
+                <h2>🏗️ Defense-in-Depth Architecture</h2>
+                
+                <div class="architecture-layer">
+                    <h3>🚪 Layer 1: Perimeter Defense</h3>
+                    <ul>
+                        <li><strong>CDN + WAF:</strong> Global edge protection with bot detection</li>
+                        <li><strong>Anti-Scraping:</strong> ML-based behavioral analysis</li>
+                        <li><strong>Rate Limiting:</strong> Adaptive quotas per user type</li>
+                        <li><strong>DDoS Protection:</strong> Automatic traffic filtering</li>
+                    </ul>
+                </div>
+
+                <div class="architecture-layer">
+                    <h3>🌐 Layer 2: Network Security</h3>
+                    <ul>
+                        <li><strong>API Gateway:</strong> Centralized authentication and routing</li>
+                        <li><strong>Load Balancers:</strong> SSL termination and health checks</li>
+                        <li><strong>Network Segmentation:</strong> Separate job seeker and employer zones</li>
+                        <li><strong>VPN Access:</strong> Secure admin connections</li>
+                    </ul>
+                </div>
+
+                <div class="architecture-layer">
+                    <h3>💻 Layer 3: Application Security</h3>
+                    <ul>
+                        <li><strong>Microservices Security:</strong> Individual service authentication</li>
+                        <li><strong>Input Validation:</strong> Resume and job posting sanitization</li>
+                        <li><strong>Session Management:</strong> Secure user sessions with timeout</li>
+                        <li><strong>Privacy Controls:</strong> GDPR-compliant data handling</li>
+                    </ul>
+                </div>
+
+                <div class="architecture-layer">
+                    <h3>🗄️ Layer 4: Data Protection</h3>
+                    <ul>
+                        <li><strong>Encryption at Rest:</strong> AES-256 for all PII data</li>
+                        <li><strong>Database Segmentation:</strong> Separate stores by sensitivity</li>
+                        <li><strong>Key Management:</strong> Hardware security modules</li>
+                        <li><strong>Backup Encryption:</strong> Secure data recovery</li>
+                    </ul>
+                </div>
+
+                <div class="architecture-layer">
+                    <h3>📊 Layer 5: Monitoring & Response</h3>
+                    <ul>
+                        <li><strong>SIEM Integration:</strong> Security event correlation</li>
+                        <li><strong>Fraud Detection:</strong> ML models for fake accounts</li>
+                        <li><strong>Privacy Monitoring:</strong> GDPR compliance tracking</li>
+                        <li><strong>24/7 SOC:</strong> Security operations center</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Stage 6: Scaling -->
+            <div class="stage" id="stage6">
+                <h2>📈 Scaling Security Architecture</h2>
+                
+                <div class="threat-grid">
+                    <div class="threat-card">
+                        <div class="control-title">🔑 Authentication at Scale</div>
+                        <ul>
+                            <li><strong>Distributed Auth:</strong> JWT tokens, minimal DB lookups</li>
+                            <li><strong>Federated Identity:</strong> Social logins (LinkedIn, Google)</li>
+                            <li><strong>Caching Strategy:</strong> Redis for session data</li>
+                            <li><strong>Regional Auth:</strong> Geographic distribution</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🗄️ Data Protection at Scale</div>
+                        <ul>
+                            <li><strong>Sharding Strategy:</strong> User data across regions</li>
+                            <li><strong>Read Replicas:</strong> Separate read/write operations</li>
+                            <li><strong>Data Classification:</strong> Automated sensitivity tagging</li>
+                            <li><strong>Encryption Performance:</strong> Hardware acceleration</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">📊 Monitoring at Scale</div>
+                        <ul>
+                            <li><strong>Machine Learning:</strong> Automated threat detection</li>
+                            <li><strong>Distributed Logging:</strong> ELK stack deployment</li>
+                            <li><strong>Real-time Analytics:</strong> Stream processing</li>
+                            <li><strong>Global SOC:</strong> Follow-the-sun operations</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🏗️ Infrastructure Scaling</div>
+                        <ul>
+                            <li><strong>Auto-scaling Groups:</strong> Dynamic capacity management</li>
+                            <li><strong>Container Security:</strong> Kubernetes policy enforcement</li>
+                            <li><strong>Edge Computing:</strong> Regional processing nodes</li>
+                            <li><strong>Multi-Cloud Strategy:</strong> Vendor risk mitigation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stage 7: Compliance -->
+            <div class="stage" id="stage7">
+                <h2>🌍 Global Compliance Architecture</h2>
+                
+                <div class="threat-grid">
+                    <div class="threat-card">
+                        <div class="control-title">🗺️ Data Residency</div>
+                        <ul>
+                            <li><strong>Regional Storage:</strong> EU data stays in EU</li>
+                            <li><strong>Data Classification:</strong> Auto-routing by jurisdiction</li>
+                            <li><strong>Cross-border Controls:</strong> Legal transfer mechanisms</li>
+                            <li><strong>Local Encryption:</strong> Region-specific key management</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">📋 Privacy Automation</div>
+                        <ul>
+                            <li><strong>GDPR Rights:</strong> Automated data export/deletion</li>
+                            <li><strong>Consent Management:</strong> Granular privacy controls</li>
+                            <li><strong>Data Minimization:</strong> Automatic data lifecycle</li>
+                            <li><strong>Breach Notification:</strong> 72-hour compliance automation</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">⚖️ Legal Compliance</div>
+                        <ul>
+                            <li><strong>Employment Laws:</strong> Regional hiring compliance</li>
+                            <li><strong>Anti-Discrimination:</strong> Bias monitoring in algorithms</li>
+                            <li><strong>Data Protection:</strong> Local privacy law adherence</li>
+                            <li><strong>Audit Readiness:</strong> Compliance documentation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stage 8: Response -->
+            <div class="stage" id="stage8">
+                <h2>🚨 Incident Response Strategy</h2>
+                
+                <div class="threat-grid">
+                    <div class="threat-card">
+                        <div class="threat-title">⚡ Immediate Response (0-30 min)</div>
+                        <ul>
+                            <li><strong>Detection:</strong> Automated SIEM alerts</li>
+                            <li><strong>Classification:</strong> Impact assessment</li>
+                            <li><strong>Containment:</strong> Isolate affected systems</li>
+                            <li><strong>Notification:</strong> Internal team activation</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">🔍 Investigation (30 min - 4 hours)</div>
+                        <ul>
+                            <li><strong>Forensics:</strong> Evidence collection</li>
+                            <li><strong>Impact Analysis:</strong> Affected user count</li>
+                            <li><strong>Root Cause:</strong> Attack vector identification</li>
+                            <li><strong>Timeline:</strong> Incident reconstruction</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">📢 Communication</div>
+                        <ul>
+                            <li><strong>Internal:</strong> Executive and legal teams</li>
+                            <li><strong>Regulatory:</strong> GDPR 72-hour notification</li>
+                            <li><strong>User Communication:</strong> Transparent updates</li>
+                            <li><strong>Media Relations:</strong> Proactive messaging</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">🔄 Recovery & Learning</div>
+                        <ul>
+                            <li><strong>System Restoration:</strong> Clean environment rebuild</li>
+                            <li><strong>User Support:</strong> Identity monitoring services</li>
+                            <li><strong>Process Improvement:</strong> Lessons learned</li>
+                            <li><strong>Training Updates:</strong> Team skill enhancement</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stage 9: Metrics -->
+            <div class="stage" id="stage9">
+                <h2>📊 Security Success Metrics</h2>
+                
+                <div class="metric-category">
+                    <h3>🎯 Risk Reduction Metrics</h3>
+                    <ul>
+                        <li><strong>Data Scraping Prevention:</strong> 99.8% reduction in successful scraping attempts</li>
+                        <li><strong>Account Takeover Rate:</strong> <0.1% of user accounts</li>
+                        <li><strong>Fake Account Detection:</strong> 95% automated identification</li>
+                        <li><strong>Security Incident Frequency:</strong> <2 per quarter</li>
+                    </ul>
+                </div>
+
+                <div class="metric-category">
+                    <h3>💼 Business Impact Metrics</h3>
+                    <ul>
+                        <li><strong>User Trust Score:</strong> 94% confidence in data protection</li>
+                        <li><strong>Compliance Score:</strong> 99% automated GDPR compliance</li>
+                        <li><strong>Revenue Protection:</strong> $10M+ prevented losses annually</li>
+                        <li><strong>Platform Availability:</strong> 99.9% uptime achievement</li>
+                    </ul>
+                </div>
+
+                <div class="metric-category">
+                    <h3>⚙️ Operational Efficiency</h3>
+                    <ul>
+                        <li><strong>Security Automation:</strong> 85% of tasks automated</li>
+                        <li><strong>Mean Time to Detection:</strong> <15 minutes</li>
+                        <li><strong>False Positive Rate:</strong> <3% of security alerts</li>
+                        <li><strong>Privacy Request Processing:</strong> <24 hours</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Stage 10: Memory -->
+            <div class="stage" id="stage10">
+                <h2>🧠 Memory Framework for Interviews</h2>
+                
+                <div class="memory-aid">
+                    <h3>Universal Job Portal Security Pattern</h3>
+                    <p><strong>"Job Portals = Personal Data + Economic Intelligence + Scale"</strong></p>
+                    <br>
+                    <p><strong>5-Second Answer Structure:</strong></p>
+                    <p>1. "This is a job portal with massive personal data..."</p>
+                    <p>2. "Key threats are data scraping and identity theft..."</p>
+                    <p>3. "I'll build 5 layers focusing on anti-scraping..."</p>
+                    <p>4. "Scale with automated privacy controls..."</p>
+                    <p>5. "Measure success by user trust and compliance..."</p>
+                </div>
+
+                <div class="threat-grid">
+                    <div class="threat-card">
+                        <div class="security-title">🎯 Job Portal Unique Focus</div>
+                        <ul>
+                            <li><strong>Anti-Scraping:</strong> Always mention first</li>
+                            <li><strong>Privacy by Design:</strong> GDPR compliance built-in</li>
+                            <li><strong>Identity Verification:</strong> Fake account prevention</li>
+                            <li><strong>Data Classification:</strong> Public vs private data</li>
+                            <li><strong>Behavioral Analytics:</strong> Detect suspicious patterns</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">⚡ Quick Threat Identification</div>
+                        <ul>
+                            <li><strong>Primary:</strong> Data scraping by competitors</li>
+                            <li><strong>Secondary:</strong> Identity theft from resumes</li>
+                            <li><strong>Business:</strong> Fake job posts and employers</li>
+                            <li><strong>Compliance:</strong> Privacy law violations</li>
+                            <li><strong>Economic:</strong> Salary data manipulation</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">🛡️ Control Priority</div>
+                        <ul>
+                            <li><strong>Layer 1:</strong> Anti-scraping and bot detection</li>
+                            <li><strong>Layer 2:</strong> API security and rate limiting</li>
+                            <li><strong>Layer 3:</strong> Privacy controls and validation</li>
+                            <li><strong>Layer 4:</strong> Data encryption and segmentation</li>
+                            <li><strong>Layer 5:</strong> Fraud detection and monitoring</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="security-title">📈 Scale Considerations</div>
+                        <ul>
+                            <li><strong>Geographic:</strong> Data residency requirements</li>
+                            <li><strong>Volume:</strong> Millions of users and resumes</li>
+                            <li><strong>Performance:</strong> Real-time search capabilities</li>
+                            <li><strong>Compliance:</strong> Automated privacy rights</li>
+                            <li><strong>Detection:</strong> ML-based threat identification</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight">
+                    <h3>🎯 Interview Success Formula</h3>
+                    <p><strong>Always Start With:</strong> "Job portals are unique because they contain massive amounts of personal and economic data that's highly valuable to both criminals and competitors..."</p>
+                    
+                    <p><strong>Key Differentiators to Mention:</strong></p>
+                    <ul>
+                        <li>Anti-scraping as primary defense</li>
+                        <li>Privacy by design for global compliance</li>
+                        <li>Behavioral analytics for fake detection</li>
+                        <li>Economic intelligence protection</li>
+                        <li>Multi-tenant access patterns</li>
+                    </ul>
+
+                    <p><strong>End With Business Value:</strong> "This architecture protects user trust, prevents competitive data theft, ensures global compliance, and enables secure scaling to millions of users."</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" id="prevBtn" onclick="previousStage()" disabled>← Previous</button>
+            <button class="control-btn" id="nextBtn" onclick="nextStage()">Next →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStage = 0;
+        const totalStages = 11;
+
+        function showStage(stageIndex) {
+            const stages = document.querySelectorAll('.stage');
+            stages.forEach(stage => stage.classList.remove('active'));
+
+            const navBtns = document.querySelectorAll('.nav-btn');
+            navBtns.forEach(btn => btn.classList.remove('active'));
+
+            const targetStage = document.getElementById(`stage${stageIndex}`);
+            if (targetStage) {
+                targetStage.classList.add('active');
+                navBtns[stageIndex].classList.add('active');
+                currentStage = stageIndex;
+            }
+
+            updateProgressBar();
+            updateNavigationButtons();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function nextStage() {
+            if (currentStage < totalStages - 1) {
+                showStage(currentStage + 1);
+            }
+        }
+
+        function previousStage() {
+            if (currentStage > 0) {
+                showStage(currentStage - 1);
+            }
+        }
+
+        function updateProgressBar() {
+            const progressFill = document.getElementById('progressFill');
+            const progressPercentage = ((currentStage + 1) / totalStages) * 100;
+            progressFill.style.width = progressPercentage + '%';
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            prevBtn.disabled = currentStage === 0;
+            nextBtn.disabled = currentStage === totalStages - 1;
+
+            if (currentStage === totalStages - 1) {
+                nextBtn.textContent = 'Complete! 🎉';
+            } else {
+                nextBtn.textContent = 'Next →';
+            }
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowRight' || event.key === ' ') {
+                event.preventDefault();
+                nextStage();
+            } else if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                previousStage();
+            }
+        });
+
+        updateProgressBar();
+        updateNavigationButtons();
+    </script>
+</body>
+</html>-top: 10px; padding: 10px; background: #f8d7da; border-radius: 5px;">
+                            <strong>Failure Impact:</strong> Identity theft, competitive disadvantage, privacy violations
+                        </div>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">✅ Integrity Goals</div>
+                        <p><strong>Ensure data accuracy and prevent unauthorized modification</strong></p>
+                        <ul>
+                            <li><strong>Resume Accuracy:</strong> Prevent fake qualifications</li>
+                            <li><strong>Job Postings:</strong> Authentic employer listings only</li>
+                            <li><strong>Salary Data:</strong> Accurate market compensation info</li>
+                            <li><strong>User Profiles:</strong> Verified employer accounts</li>
+                            <li><strong>Application Records:</strong> Complete hiring audit trail</li>
+                            <li><strong>Search Results:</strong> Unmanipulated job rankings</li>
+                        </ul>
+                        <div style="margin-top: 10px; padding: 10px; background: #f8d7da; border-radius: 5px;">
+                            <strong>Failure Impact:</strong> Hiring fraud, market manipulation, platform distrust
+                        </div>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🌐 Availability Goals</div>
+                        <p><strong>Keep systems operational and accessible</strong></p>
+                        <ul>
+                            <li><strong>Search Performance:</strong> <2 second response times</li>
+                            <li><strong>Uptime Target:</strong> 99.9% availability (8.7 hours/year downtime)</li>
+                            <li><strong>Peak Handling:</strong> Monday morning traffic spikes</li>
+                            <li><strong>Global Access:</strong> Regional performance optimization</li>
+                            <li><strong>Mobile Experience:</strong> Consistent across devices</li>
+                            <li><strong>Disaster Recovery:</strong> <4 hour RTO, <1 hour RPO</li>
+                        </ul>
+                        <div style="margin-top: 10px; padding: 10px; background: #f8d7da; border-radius: 5px;">
+                            <strong>Failure Impact:</strong> Lost revenue, user migration to competitors
+                        </div>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🔑 Authentication Requirements</div>
+                        <p><strong>Verify user identity reliably</strong></p>
+                        <ul>
+                            <li><strong>Job Seekers:</strong> Email verification + optional MFA</li>
+                            <li><strong>Employers:</strong> Business verification + mandatory MFA</li>
+                            <li><strong>Recruiters:</strong> Professional verification + MFA</li>
+                            <li><strong>Admins:</strong> Strong MFA + hardware tokens</li>
+                            <li><strong>API Access:</strong> OAuth 2.0 + API keys</li>
+                            <li><strong>Social Login:</strong> LinkedIn, Google integration</li>
+                        </ul>
+                        <div style="margin-top: 10px; padding: 10px; background: #d1ecf1; border-radius: 5px;">
+                            <strong>Success Metric:</strong> <0.1% account takeover rate
+                        </div>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🚪 Authorization Framework</div>
+                        <p><strong>Control what authenticated users can access</strong></p>
+                        <ul>
+                            <li><strong>Job Seekers:</strong> Own profile + public job listings</li>
+                            <li><strong>Employers:</strong> Own jobs + candidate applications</li>
+                            <li><strong>Recruiters:</strong> Extended search + contact permissions</li>
+                            <li><strong>Premium Users:</strong> Advanced features + bulk operations</li>
+                            <li><strong>Data Access:</strong> Role-based permissions (RBAC)</li>
+                            <li><strong>API Limits:</strong> Rate limiting by user tier</li>
+                        </ul>
+                        <div style="margin-top: 10px; padding: 10px; background: #d1ecf1; border-radius: 5px;">
+                            <strong>Success Metric:</strong> Zero unauthorized data access incidents
+                        </div>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">📊 Auditing & Compliance</div>
+                        <p><strong>Track and log all security-relevant activities</strong></p>
+                        <ul>
+                            <li><strong>Data Access:</strong> Who viewed which profiles/resumes</li>
+                            <li><strong>Administrative Actions:</strong> Account changes, permissions</li>
+                            <li><strong>Privacy Events:</strong> GDPR requests, data exports</li>
+                            <li><strong>Security Events:</strong> Failed logins, suspicious activity</li>
+                            <li><strong>Business Events:</strong> Job applications, hiring actions</li>
+                            <li><strong>System Events:</strong> Configuration changes, deployments</li>
+                        </ul>
+                        <div style="margin-top: 10px; padding: 10px; background: #d1ecf1; border-radius: 5px;">
+                            <strong>Success Metric:</strong> 100% security events logged and retained
+                        </div>
+                    </div>
+                </div>
+
+                <div class="example-scenario">
+                    <h3>🎯 Job Portal CIA-AAA Example</h3>
+                    <p><strong>Scenario:</strong> A job seeker uploads their resume with salary expectations</p>
+                    <ul>
+                        <li><strong>Confidentiality:</strong> Resume visible only to employers they apply to</li>
+                        <li><strong>Integrity:</strong> Resume content cannot be altered by others</li>
+                        <li><strong>Availability:</strong> Resume accessible 99.9% of time for applications</li>
+                        <li><strong>Authentication:</strong> Job seeker verified via email + optional MFA</li>
+                        <li><strong>Authorization:</strong> Only they can edit, employers can view after application</li>
+                        <li><strong>Auditing:</strong> Log who viewed resume and when</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Stage 3: STRIDE -->
+            <div class="stage" id="stage3">
+                <h2>⚡ STRIDE Threat Analysis</h2>
+                
+                <div class="memory-aid">
+                    Memory Aid: "Smart Thieves Really Investigate Data Everywhere"<br>
+                    <strong>S</strong>poofing - <strong>T</strong>ampering - <strong>R</strong>epudiation - <strong>I</strong>nformation Disclosure - <strong>D</strong>enial of Service - <strong>E</strong>levation of Privilege
+                </div>
+
+                <div class="threat-grid">
+                    <div class="threat-card">
+                        <div class="threat-title">👤 S - Spoofing Threats</div>
+                        <p><strong>Impersonating legitimate users or systems</strong></p>
+                        <ul>
+                            <li><strong>Fake Job Seekers:</strong> Creating false profiles to access employer data</li>
+                            <li><strong>Fake Employers:</strong> Scammers posting jobs to collect resumes</li>
+                            <li><strong>Account Takeover:</strong> Using stolen credentials to impersonate users</li>
+                            <li><strong>Recruiter Impersonation:</strong> Unauthorized access to candidate data</li>
+                            <li><strong>API Spoofing:</strong> Fake applications calling our APIs</li>
+                            <li><strong>Email Spoofing:</strong> Phishing emails appearing from the platform</li>
+                        </ul>
+                        <div style="margin-top: 10px; padding: 8px; background: #fff3cd; border-radius: 5px;">
+                            <strong>Impact:</strong> Data theft, fraud, platform reputation damage
+                        </div>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">🔧 T - Tampering Threats</div>
+                        <p><strong>Unauthorized modification of data or systems</strong></p>
+                        <ul>
+                            <li><strong>Resume Manipulation:</strong> Altering qualifications or experience</li>
+                            <li><strong>Job Posting Fraud:</strong> Modifying salary ranges or requirements</li>
+                            <li><strong>Search Result Manipulation:</strong> Artificial ranking boosts</li>
+                            <li><strong>Salary Data Corruption:</strong> Skewing market compensation data</li>
+                            <li><strong>Application Status Changes:</strong> Unauthorized hiring decision updates</li>
+                            <li><strong>Algorithm Manipulation:</strong> Biasing matching and recommendations</li>
+                        </ul>
+                        <div style="margin
