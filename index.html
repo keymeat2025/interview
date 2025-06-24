@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Design Interview Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-weight: 500;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.5);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn.active {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            box-shadow: 0 4px 15px rgba(76,175,80,0.3);
+        }
+
+        .content-area {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            min-height: 500px;
+        }
+
+        .stage {
+            display: none;
+        }
+
+        .stage.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stage h2 {
+            color: #2a5298;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .framework-box {
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            border-left: 5px solid #4CAF50;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .framework-title {
+            font-weight: bold;
+            color: #2a5298;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .threat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .threat-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .threat-card:hover {
+            border-color: #4CAF50;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .threat-title {
+            font-weight: bold;
+            color: #dc3545;
+            margin-bottom: 10px;
+        }
+
+        .control-title {
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+
+        .architecture-layer {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 5px solid #ffd700;
+        }
+
+        .metric-category {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .control-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
+        .control-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.2);
+            height: 6px;
+            border-radius: 3px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: #4CAF50;
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .example-scenario {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .navigation {
+                gap: 5px;
+            }
+            
+            .nav-btn {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+            
+            .content-area {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Security Design Interview Guide</h1>
+            <p>Master the art of security architecture design interviews</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-btn active" onclick="showStage(0)">Overview</button>
+            <button class="nav-btn" onclick="showStage(1)">BRAT-TA</button>
+            <button class="nav-btn" onclick="showStage(2)">CIA-AAA</button>
+            <button class="nav-btn" onclick="showStage(3)">STRIDE</button>
+            <button class="nav-btn" onclick="showStage(4)">Controls</button>
+            <button class="nav-btn" onclick="showStage(5)">Architecture</button>
+            <button class="nav-btn" onclick="showStage(6)">Scaling</button>
+            <button class="nav-btn" onclick="showStage(7)">Compliance</button>
+            <button class="nav-btn" onclick="showStage(8)">Incident Response</button>
+            <button class="nav-btn" onclick="showStage(9)">Metrics</button>
+        </div>
+
+        <div class="content-area">
+            <!-- Stage 0: Overview -->
+            <div class="stage active" id="stage0">
+                <h2>🎯 Security Design Interview Overview</h2>
+                
+                <div class="example-scenario">
+                    <h3>📋 Typical Interview Scenario</h3>
+                    <p><strong>"Design the security architecture for a new e-commerce platform that will handle customer data, payment processing, and vendor onboarding. The platform needs to support mobile apps, web interfaces, and third-party integrations."</strong></p>
+                </div>
+
+                <div class="framework-box">
+                    <div class="framework-title">🗺️ Complete Interview Roadmap</div>
+                    <ol>
+                        <li><strong>BRAT-TA Framework</strong> - Scoping and requirements gathering</li>
+                        <li><strong>CIA-AAA Principles</strong> - Define security objectives</li>
+                        <li><strong>STRIDE Analysis</strong> - Systematic threat identification</li>
+                        <li><strong>Security Controls</strong> - Design specific protective measures</li>
+                        <li><strong>Architecture Design</strong> - Layer security defenses</li>
+                        <li><strong>Scaling Strategy</strong> - Handle millions of users</li>
+                        <li><strong>Multi-Jurisdiction Compliance</strong> - Global regulatory requirements</li>
+                        <li><strong>Incident Response</strong> - Handle security breaches</li>
+                        <li><strong>Success Metrics</strong> - Measure and improve security</li>
+                    </ol>
+                </div>
+
+                <div class="highlight">
+                    <strong>💡 Key Interview Tips:</strong>
+                    <ul>
+                        <li>Always start with clarifying questions - don't jump to solutions</li>
+                        <li>Think systematically using proven frameworks</li>
+                        <li>Consider business context, not just technical aspects</li>
+                        <li>Be ready to defend your design decisions</li>
+                        <li>Show trade-off analysis between security, usability, and cost</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Stage 1: BRAT-TA -->
+            <div class="stage" id="stage1">
+                <h2>🔍 BRAT-TA Framework: Requirements Gathering</h2>
+                
+                <div class="framework-box">
+                    <div class="framework-title">📝 BRAT-TA Memory Aid</div>
+                    <p><strong>B</strong>usiness - <strong>R</strong>egulations - <strong>A</strong>ssets - <strong>T</strong>hreats - <strong>T</strong>rust - <strong>A</strong>rchitecture</p>
+                </div>
+
+                <div class="threat-grid">
+                    <div class="threat-card">
+                        <div class="threat-title">🏢 B - Business Context</div>
+                        <ul>
+                            <li>Expected scale (users, transactions)</li>
+                            <li>Budget and timeline constraints</li>
+                            <li>Risk tolerance level</li>
+                            <li>Geographic markets</li>
+                            <li>Existing infrastructure</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">📋 R - Regulations</div>
+                        <ul>
+                            <li>PCI-DSS for payment processing</li>
+                            <li>GDPR for EU customers</li>
+                            <li>CCPA for California residents</li>
+                            <li>Industry-specific requirements</li>
+                            <li>Data residency laws</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">💎 A - Assets</div>
+                        <ul>
+                            <li>Customer personal data</li>
+                            <li>Payment card information</li>
+                            <li>Order history and preferences</li>
+                            <li>Business intelligence data</li>
+                            <li>Vendor and partner data</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">⚠️ T - Threats</div>
+                        <ul>
+                            <li>External hackers and cybercriminals</li>
+                            <li>Insider threats (employees)</li>
+                            <li>Competitors and scrapers</li>
+                            <li>Nation-state actors</li>
+                            <li>Automated bots and fraud</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">🔐 T - Trust Boundaries</div>
+                        <ul>
+                            <li>Customer access zones</li>
+                            <li>Employee access levels</li>
+                            <li>Vendor integration points</li>
+                            <li>Third-party service connections</li>
+                            <li>Internal network segments</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">🏗️ A - Architecture Approach</div>
+                        <ul>
+                            <li>Cloud vs on-premise preference</li>
+                            <li>Microservices vs monolithic</li>
+                            <li>Mobile and web requirements</li>
+                            <li>Integration capabilities needed</li>
+                            <li>Performance requirements</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="example-scenario">
+                    <h3>🎯 Example Questions to Ask</h3>
+                    <ul>
+                        <li>"What's the expected transaction volume at launch vs. 3-5 years out?"</li>
+                        <li>"Are we handling payment processing directly or through third parties?"</li>
+                        <li>"What's our risk tolerance - premium brand or cost-sensitive?"</li>
+                        <li>"Any existing compliance certifications we need to maintain?"</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Stage 2: CIA-AAA -->
+            <div class="stage" id="stage2">
+                <h2>🎯 CIA-AAA: Security Objectives</h2>
+                
+                <div class="framework-box">
+                    <div class="framework-title">🛡️ CIA Triad + AAA Framework</div>
+                    <p>Define <strong>what</strong> security outcomes we need to achieve</p>
+                </div>
+
+                <div class="threat-grid">
+                    <div class="threat-card">
+                        <div class="control-title">🔒 Confidentiality</div>
+                        <p><strong>Keep sensitive data secret</strong></p>
+                        <ul>
+                            <li>Customer credit card numbers</li>
+                            <li>Personal identification information</li>
+                            <li>Business proprietary data</li>
+                            <li>Internal system architecture</li>
+                            <li>Vendor pricing and contracts</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">✅ Integrity</div>
+                        <p><strong>Ensure data accuracy and prevent tampering</strong></p>
+                        <ul>
+                            <li>Order details and pricing</li>
+                            <li>Payment transaction amounts</li>
+                            <li>Customer account balances</li>
+                            <li>Product inventory levels</li>
+                            <li>Audit logs and compliance records</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🌐 Availability</div>
+                        <p><strong>Keep systems operational and accessible</strong></p>
+                        <ul>
+                            <li>99.9% uptime during business hours</li>
+                            <li>Handle Black Friday traffic spikes</li>
+                            <li>Quick recovery from outages</li>
+                            <li>DDoS attack resilience</li>
+                            <li>Geographic redundancy</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🔑 Authentication</div>
+                        <p><strong>Verify user identity</strong></p>
+                        <ul>
+                            <li>Multi-factor authentication</li>
+                            <li>Strong password policies</li>
+                            <li>Biometric options for mobile</li>
+                            <li>Social login integration</li>
+                            <li>Employee access controls</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🚪 Authorization</div>
+                        <p><strong>Control what authenticated users can do</strong></p>
+                        <ul>
+                            <li>Customers see only their data</li>
+                            <li>Role-based employee access</li>
+                            <li>Vendor limited system access</li>
+                            <li>API rate limiting per user</li>
+                            <li>Privileged operation approval</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">📊 Auditing</div>
+                        <p><strong>Track and log all security-relevant activities</strong></p>
+                        <ul>
+                            <li>All financial transactions</li>
+                            <li>Administrative actions</li>
+                            <li>Failed login attempts</li>
+                            <li>Data access and modifications</li>
+                            <li>System configuration changes</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight">
+                    <strong>🎯 E-commerce Example:</strong><br>
+                    <strong>Confidentiality:</strong> "Keep customer credit cards secret"<br>
+                    <strong>Integrity:</strong> "Make sure orders aren't tampered with"<br>
+                    <strong>Availability:</strong> "Website stays up during Black Friday sales"
+                </div>
+            </div>
+
+            <!-- Stage 3: STRIDE -->
+            <div class="stage" id="stage3">
+                <h2>⚡ STRIDE: Systematic Threat Analysis</h2>
+                
+                <div class="framework-box">
+                    <div class="framework-title">🎯 STRIDE Threat Model</div>
+                    <p>Identify <strong>specific attack methods</strong> that could compromise our security objectives</p>
+                </div>
+
+                <div class="threat-grid">
+                    <div class="threat-card">
+                        <div class="threat-title">👤 S - Spoofing</div>
+                        <p><strong>Impersonating someone else</strong></p>
+                        <ul>
+                            <li>Fake user accounts for fraudulent orders</li>
+                            <li>Impersonating legitimate customers</li>
+                            <li>Fake vendor registration</li>
+                            <li>Email spoofing for phishing</li>
+                            <li>IP address spoofing</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">🔧 T - Tampering</div>
+                        <p><strong>Modifying data or code</strong></p>
+                        <ul>
+                            <li>Changing order prices during checkout</li>
+                            <li>Modifying payment amounts</li>
+                            <li>Tampering with product reviews</li>
+                            <li>Database injection attacks</li>
+                            <li>Modifying shipping addresses</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">🚫 R - Repudiation</div>
+                        <p><strong>Denying actions taken</strong></p>
+                        <ul>
+                            <li>Customer claims "I never ordered this"</li>
+                            <li>Vendor denies receiving payment</li>
+                            <li>Employee denies unauthorized access</li>
+                            <li>Dispute legitimate transactions</li>
+                            <li>Challenge system logs accuracy</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">📤 I - Information Disclosure</div>
+                        <p><strong>Exposing confidential information</strong></p>
+                        <ul>
+                            <li>Credit card database theft</li>
+                            <li>Customer PII exposure</li>
+                            <li>Business intelligence leakage</li>
+                            <li>API data extraction</li>
+                            <li>Internal system information disclosure</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">💥 D - Denial of Service</div>
+                        <p><strong>Making systems unavailable</strong></p>
+                        <ul>
+                            <li>DDoS attacks during peak shopping</li>
+                            <li>Competitive website takedowns</li>
+                            <li>Resource exhaustion attacks</li>
+                            <li>Database performance degradation</li>
+                            <li>Payment system disruptions</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">⬆️ E - Elevation of Privilege</div>
+                        <p><strong>Gaining unauthorized higher access</strong></p>
+                        <ul>
+                            <li>Customer accessing admin functions</li>
+                            <li>Employee accessing financial data</li>
+                            <li>Vendor accessing customer databases</li>
+                            <li>Exploiting software vulnerabilities</li>
+                            <li>Social engineering higher privileges</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="example-scenario">
+                    <h3>🔗 Connecting Threats to CIA-AAA</h3>
+                    <ul>
+                        <li><strong>Information Disclosure</strong> → Breaks <strong>Confidentiality</strong></li>
+                        <li><strong>Tampering</strong> → Breaks <strong>Integrity</strong></li>
+                        <li><strong>Denial of Service</strong> → Breaks <strong>Availability</strong></li>
+                        <li><strong>Spoofing</strong> → Breaks <strong>Authentication</strong></li>
+                        <li><strong>Elevation of Privilege</strong> → Breaks <strong>Authorization</strong></li>
+                        <li><strong>Repudiation</strong> → Breaks <strong>Auditing</strong></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Stage 4: Security Controls -->
+            <div class="stage" id="stage4">
+                <h2>🛡️ Security Controls: Specific Solutions</h2>
+                
+                <div class="framework-box">
+                    <div class="framework-title">🎯 From Threats to Controls</div>
+                    <p>Design <strong>specific technical measures</strong> to address each STRIDE threat</p>
+                </div>
+
+                <div class="threat-grid">
+                    <div class="threat-card">
+                        <div class="control-title">🔐 Anti-Spoofing Controls</div>
+                        <ul>
+                            <li><strong>Multi-factor authentication</strong> for user accounts</li>
+                            <li><strong>Email verification</strong> for new registrations</li>
+                            <li><strong>CAPTCHA</strong> to prevent bot registrations</li>
+                            <li><strong>Device fingerprinting</strong> for suspicious logins</li>
+                            <li><strong>Strong password policies</strong> with complexity requirements</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">✅ Anti-Tampering Controls</div>
+                        <ul>
+                            <li><strong>Input validation</strong> on all user inputs</li>
+                            <li><strong>Parameterized queries</strong> to prevent SQL injection</li>
+                            <li><strong>Digital signatures</strong> for critical transactions</li>
+                            <li><strong>Database integrity constraints</strong></li>
+                            <li><strong>Checksums and hashing</strong> for data verification</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">📋 Non-Repudiation Controls</div>
+                        <ul>
+                            <li><strong>Comprehensive transaction logging</strong></li>
+                            <li><strong>Digital receipts</strong> with timestamps</li>
+                            <li><strong>User activity tracking</strong> and audit trails</li>
+                            <li><strong>Legal disclaimers</strong> and terms of service</li>
+                            <li><strong>Cryptographic proof</strong> of transactions</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🔒 Information Protection Controls</div>
+                        <ul>
+                            <li><strong>Data encryption at rest</strong> (AES-256)</li>
+                            <li><strong>TLS encryption in transit</strong> (TLS 1.3)</li>
+                            <li><strong>Database access controls</strong> and segmentation</li>
+                            <li><strong>API authentication</strong> and rate limiting</li>
+                            <li><strong>Data loss prevention (DLP)</strong> tools</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🌐 Availability Protection Controls</div>
+                        <ul>
+                            <li><strong>Load balancing</strong> and auto-scaling</li>
+                            <li><strong>DDoS protection</strong> (CloudFlare, AWS Shield)</li>
+                            <li><strong>CDN and caching</strong> strategies</li>
+                            <li><strong>Database replication</strong> and failover</li>
+                            <li><strong>Monitoring and alerting</strong> systems</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🚪 Access Control Systems</div>
+                        <ul>
+                            <li><strong>Role-based access control</strong> (RBAC)</li>
+                            <li><strong>Principle of least privilege</strong></li>
+                            <li><strong>Regular access reviews</strong> and recertification</li>
+                            <li><strong>Privileged account management</strong> (PAM)</li>
+                            <li><strong>Just-in-time access</strong> for sensitive operations</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight">
+                    <strong>🔗 Control Selection Principle:</strong><br>
+                    Each STRIDE threat should have multiple overlapping controls (defense in depth). If one control fails, others provide backup protection.
+                </div>
+            </div>
+
+            <!-- Stage 5: Security Architecture -->
+            <div class="stage" id="stage5">
+                <h2>🏗️ Layered Security Architecture</h2>
+                
+                <div class="framework-box">
+                    <div class="framework-title">🛡️ Defense in Depth Strategy</div>
+                    <p>Organize security controls into <strong>multiple protective layers</strong> like a fortress with multiple walls</p>
+                </div>
+
+                <div class="architecture-layer">
+                    <h3>🌐 Perimeter Layer (First Line of Defense)</h3>
+                    <ul>
+                        <li><strong>Web Application Firewall (WAF)</strong> - Block malicious requests</li>
+                        <li><strong>DDoS Protection</strong> - Handle volumetric attacks</li>
+                        <li><strong>CDN with Security</strong> - Distributed protection and caching</li>
+                        <li><strong>Rate Limiting</strong> - Prevent API abuse and scraping</li>
+                    </ul>
+                </div>
+
+                <div class="architecture-layer">
+                    <h3>🔗 Network Layer</h3>
+                    <ul>
+                        <li><strong>Virtual Private Cloud (VPC)</strong> - Isolated network environment</li>
+                        <li><strong>Network Segmentation</strong> - Separate web, app, and database tiers</li>
+                        <li><strong>Load Balancers</strong> - SSL termination and traffic distribution</li>
+                        <li><strong>VPN Access</strong> - Secure administrative connections</li>
+                    </ul>
+                </div>
+
+                <div class="architecture-layer">
+                    <h3>💻 Application Layer</h3>
+                    <ul>
+                        <li><strong>Secure Coding Practices</strong> - Input validation, output encoding</li>
+                        <li><strong>API Security</strong> - OAuth 2.0, JWT tokens, rate limiting</li>
+                        <li><strong>Session Management</strong> - Secure cookies, automatic timeout</li>
+                        <li><strong>Error Handling</strong> - No information leakage in errors</li>
+                    </ul>
+                </div>
+
+                <div class="architecture-layer">
+                    <h3>🗄️ Data Layer</h3>
+                    <ul>
+                        <li><strong>Database Encryption</strong> - AES-256 encryption at rest</li>
+                        <li><strong>PCI Compliance</strong> - Tokenization of payment data</li>
+                        <li><strong>Backup Security</strong> - Encrypted, tested backups</li>
+                        <li><strong>Database Access Logging</strong> - Full audit trail</li>
+                    </ul>
+                </div>
+
+                <div class="architecture-layer">
+                    <h3>👤 Identity Layer</h3>
+                    <ul>
+                        <li><strong>Multi-Factor Authentication</strong> - SMS, authenticator apps</li>
+                        <li><strong>Role-Based Access Control</strong> - Granular permissions</li>
+                        <li><strong>Single Sign-On (SSO)</strong> - Centralized authentication</li>
+                        <li><strong>Identity Governance</strong> - Regular access reviews</li>
+                    </ul>
+                </div>
+
+                <div class="architecture-layer">
+                    <h3>📊 Monitoring Layer</h3>
+                    <ul>
+                        <li><strong>SIEM System</strong> - Centralized security event management</li>
+                        <li><strong>Real-time Fraud Detection</strong> - ML-based transaction analysis</li>
+                        <li><strong>Intrusion Detection</strong> - Network and host-based monitoring</li>
+                        <li><strong>Security Dashboards</strong> - Executive and operational views</li>
+                    </ul>
+                </div>
+
+                <div class="highlight">
+                    <strong>🏰 Defense in Depth Principle:</strong><br>
+                    If attackers bypass the perimeter layer, they still face network controls. If they breach the network, application security stops them. Each layer provides independent protection, ensuring no single point of failure.
+                </div>
+            </div>
+
+            <!-- Stage 6: Scaling Security -->
+            <div class="stage" id="stage6">
+                <h2>📈 Scaling Security Architecture</h2>
+                
+                <div class="framework-box">
+                    <div class="framework-title">🌍 Scaling to Millions of Users</div>
+                    <p>Security controls must <strong>scale automatically</strong> without degrading performance or user experience</p>
+                </div>
+
+                <div class="threat-grid">
+                    <div class="threat-card">
+                        <div class="control-title">🔑 Authentication & Authorization Scaling</div>
+                        <ul>
+                            <li><strong>Distributed Authentication</strong> - JWT tokens avoid database lookups</li>
+                            <li><strong>Caching Strategy</strong> - Redis for session data and permissions</li>
+                            <li><strong>Federated Identity</strong> - Google/Facebook login reduces load</li>
+                            <li><strong>API Rate Limiting</strong> - Token bucket algorithms per user</li>
+                            <li><strong>Geographic Distribution</strong> - Regional authentication servers</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🗄️ Data Protection at Scale</div>
+                        <ul>
+                            <li><strong>Database Sharding</strong> - Distribute encrypted customer data</li>
+                            <li><strong>Read Replicas</strong> - Scale read operations securely</li>
+                            <li><strong>Data Classification</strong> - Different protection levels by sensitivity</li>
+                            <li><strong>Automated Encryption</strong> - Cloud-native encryption services</li>
+                            <li><strong>Data Lifecycle Management</strong> - Automated archival and deletion</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">📊 Monitoring & Detection at Scale</div>
+                        <ul>
+                            <li><strong>Machine Learning</strong> - AI fraud detection on millions of transactions</li>
+                            <li><strong>Distributed Logging</strong> - ELK stack or cloud logging services</li>
+                            <li><strong>Real-time Alerting</strong> - Automated incident response triggers</li>
+                            <li><strong>Behavioral Analytics</strong> - Anomaly detection across user base</li>
+                            <li><strong>Threat Intelligence</strong> - Automated IOC feeds and blocking</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🏗️ Infrastructure Scaling</div>
+                        <ul>
+                            <li><strong>Auto-scaling Security</strong> - WAF rules adapt to traffic</li>
+                            <li><strong>Microservices Security</strong> - Service mesh with mTLS</li>
+                            <li><strong>Container Security</strong> - Runtime protection and image scanning</li>
+                            <li><strong>Cloud-native Security</strong> - Leverage AWS/Azure security services</li>
+                            <li><strong>Edge Security</strong> - CDN-based protection and caching</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">⚙️ Operational Scaling</div>
+                        <ul>
+                            <li><strong>Security Automation</strong> - Automated vulnerability scanning</li>
+                            <li><strong>DevSecOps Integration</strong> - Security in CI/CD pipelines</li>
+                            <li><strong>Incident Response Automation</strong> - Playbook execution</li>
+                            <li><strong>Compliance Automation</strong> - Continuous compliance monitoring</li>
+                            <li><strong>Self-healing Systems</strong> - Automatic threat response</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">💰 Cost-Effective Scaling</div>
+                        <ul>
+                            <li><strong>Risk-based Security</strong> - Focus on high-value assets</li>
+                            <li><strong>Shared Security Services</strong> - Centralized security tools</li>
+                            <li><strong>Cloud Economics</strong> - Pay-per-use security services</li>
+                            <li><strong>Open Source Tools</strong> - Where appropriate for scale</li>
+                            <li><strong>Security ROI Metrics</strong> - Measure cost vs. risk reduction</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="example-scenario">
+                    <h3>🎯 Scaling Challenge Example</h3>
+                    <p><strong>Interviewer:</strong> "Your fraud detection system works great for 1,000 transactions/day. How do you handle 1 million transactions/day during Black Friday?"</p>
+                    <p><strong>Your Answer:</strong> "Implement real-time ML models using streaming analytics, pre-compute risk scores, use cached decision rules, and have auto-scaling infrastructure that adds fraud detection capacity based on transaction volume."</p>
+                </div>
+            </div>
+
+            <!-- Stage 7: Multi-Jurisdiction Compliance -->
+            <div class="stage" id="stage7">
+                <h2>🌍 Multi-Jurisdiction Compliance</h2>
+                
+                <div class="framework-box">
+                    <div class="framework-title">⚖️ Global Regulatory Requirements</div>
+                    <p>Different countries = different rules. Design <strong>compliant-by-design architecture</strong> that adapts to local regulations</p>
+                </div>
+
+                <div class="threat-grid">
+                    <div class="threat-card">
+                        <div class="control-title">🗺️ Data Residency & Sovereignty</div>
+                        <ul>
+                            <li><strong>Regional Data Centers</strong> - EU data stays in EU (GDPR)</li>
+                            <li><strong>Data Classification</strong> - Tag data with residency requirements</li>
+                            <li><strong>Cross-border Controls</strong> - Standard Contractual Clauses (SCCs)</li>
+                            <li><strong>Local Encryption Keys</strong> - Some countries require local key storage</li>
+                            <li><strong>Data Routing Engine</strong> - Automatically route to compliant locations</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">📋 Regulatory Compliance Matrix</div>
+                        <ul>
+                            <li><strong>GDPR (EU)</strong> - Right to erasure, data portability, consent</li>
+                            <li><strong>CCPA (California)</strong> - Consumer privacy rights, opt-out</li>
+                            <li><strong>PCI-DSS (Global)</strong> - Payment card data protection</li>
+                            <li><strong>SOX (US Public)</strong> - Financial controls and audit</li>
+                            <li><strong>PIPEDA (Canada)</strong> - Privacy breach notification</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🔧 Technical Implementation</div>
+                        <ul>
+                            <li><strong>Privacy-by-Design</strong> - Consent management system</li>
+                            <li><strong>Data Localization Engine</strong> - Geographic data routing</li>
+                            <li><strong>Compliance Dashboards</strong> - Real-time regulatory status</li>
+                            <li><strong>Automated Subject Rights</strong> - GDPR data export/deletion</li>
+                            <li><strong>Audit Trail Management</strong> - Region-specific logging</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🏢 Operational Challenges</div>
+                        <ul>
+                            <li><strong>Legal Entity Structure</strong> - Separate entities per jurisdiction</li>
+                            <li><strong>Incident Notification</strong> - Different breach timelines</li>
+                            <li><strong>Audit Requirements</strong> - Varying audit frequencies</li>
+                            <li><strong>Staff Training</strong> - Local law compliance training</li>
+                            <li><strong>Documentation</strong> - Multi-language compliance docs</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">⚖️ Compliance Architecture Pattern</div>
+                        <ul>
+                            <li><strong>Global Control Plane</strong> - Centralized policies and monitoring</li>
+                            <li><strong>Regional Compliance Engines</strong> - Jurisdiction-specific rules</li>
+                            <li><strong>Local Data Processing</strong> - In-country data handling</li>
+                            <li><strong>Cross-border Gateways</strong> - Compliant data transfers</li>
+                            <li><strong>Compliance APIs</strong> - Unified interface for all regions</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="control-title">🚨 Risk Management</div>
+                        <ul>
+                            <li><strong>Regulatory Change Monitoring</strong> - Track law updates</li>
+                            <li><strong>Compliance Risk Scoring</strong> - Quantify regulatory risks</li>
+                            <li><strong>Legal Technology Review</strong> - Lawyer approval for changes</li>
+                            <li><strong>Regulatory Sandbox Testing</strong> - Test compliance before launch</li>
+                            <li><strong>Insurance and Bonds</strong> - Financial protection</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight">
+                    <strong>🎯 Key Insight:</strong><br>
+                    Compliance isn't just technical - it's legal, operational, and cultural. Architecture must support different privacy expectations, regulatory timelines, and enforcement mechanisms across jurisdictions.
+                </div>
+            </div>
+
+            <!-- Stage 8: Incident Response -->
+            <div class="stage" id="stage8">
+                <h2>🚨 Incident Response Strategy</h2>
+                
+                <div class="framework-box">
+                    <div class="framework-title">⏱️ Security Incidents Are Inevitable</div>
+                    <p>The key is <strong>responding systematically and quickly</strong> to minimize business impact</p>
+                </div>
+
+                <div class="threat-grid">
+                    <div class="threat-card">
+                        <div class="threat-title">⚡ Immediate Response (0-30 minutes)</div>
+                        <ul>
+                            <li><strong>Detection</strong> - SIEM alerts, fraud detection, user reports</li>
+                            <li><strong>Severity Classification</strong> - Critical/High/Medium/Low triage</li>
+                            <li><strong>Immediate Containment</strong> - Block IPs, disable accounts, isolate systems</li>
+                            <li><strong>War Room Activation</strong> - Assemble incident response team</li>
+                            <li><strong>Executive Notification</strong> - Alert leadership within 30 minutes</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">🔍 Investigation Phase (30 minutes - 4 hours)</div>
+                        <ul>
+                            <li><strong>Evidence Collection</strong> - Preserve logs, memory dumps, network captures</li>
+                            <li><strong>Impact Assessment</strong> - Customer count, data types, financial impact</li>
+                            <li><strong>Root Cause Analysis</strong> - Attack vector, timeline, failed controls</li>
+                            <li><strong>Threat Intelligence</strong> - Known attack groups, similar incidents</li>
+                            <li><strong>Forensic Analysis</strong> - Digital forensics for legal evidence</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">📢 Communication & Compliance</div>
+                        <ul>
+                            <li><strong>Internal Notifications</strong> - Executive, legal, PR teams</li>
+                            <li><strong>Regulatory Reporting</strong> - GDPR (72 hours), PCI-DSS, state laws</li>
+                            <li><strong>Customer Communication</strong> - Transparent, factual updates</li>
+                            <li><strong>Media Strategy</strong> - Proactive communication plan</li>
+                            <li><strong>Stakeholder Updates</strong> - Investors, partners, vendors</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">🔄 Recovery & Business Continuity</div>
+                        <ul>
+                            <li><strong>System Restoration</strong> - Clean rebuilds from known-good backups</li>
+                            <li><strong>Enhanced Monitoring</strong> - Additional detection for similar attacks</li>
+                            <li><strong>Vendor Coordination</strong> - Payment processors, cloud providers</li>
+                            <li><strong>Customer Support</strong> - Hotlines, credit monitoring, ID protection</li>
+                            <li><strong>Business Operations</strong> - Alternative processes during recovery</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">📊 Post-Incident Activities</div>
+                        <ul>
+                            <li><strong>Lessons Learned</strong> - What worked? What failed? Improvements?</li>
+                            <li><strong>Control Enhancements</strong> - New security measures</li>
+                            <li><strong>Tabletop Exercises</strong> - Test improved procedures</li>
+                            <li><strong>Legal Considerations</strong> - Litigation, regulatory exams, insurance</li>
+                            <li><strong>Process Documentation</strong> - Update incident response procedures</li>
+                        </ul>
+                    </div>
+
+                    <div class="threat-card">
+                        <div class="threat-title">📈 Key Success Metrics</div>
+                        <ul>
+                            <li><strong>Mean Time to Detection (MTTD)</strong> - How quickly we spot incidents</li>
+                            <li><strong>Mean Time to Containment (MTTC)</strong> - How quickly we stop damage</li>
+                            <li><strong>Recovery Time Objective (RTO)</strong> - Service restoration speed</li>
+                            <li><strong>Customer Impact</strong> - Number of affected customers</li>
+                            <li><strong>Financial Impact</strong> - Total cost of incident</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="example-scenario">
+                    <h3>🎯 Incident Response Example</h3>
+                    <p><strong>Scenario:</strong> "Your fraud detection system alerts that 50,000 credit card numbers may have been accessed by an unauthorized party. Walk me through your response."</p>
+                    <p><strong>Response Framework:</strong></p>
+                    <ol>
+                        <li><strong>Immediate:</strong> Isolate affected systems, activate incident team</li>
+                        <li><strong>Assessment:</strong> Confirm breach scope, affected customer count</li>
+                        <li><strong>Communication:</strong> Notify executives, legal, prepare customer notification</li>
+                        <li><strong>Compliance:</strong> 72-hour GDPR notification, PCI-DSS breach procedures</li>
+                        <li><strong>Recovery:</strong> Replace compromised cards, enhance monitoring</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Stage 9: Success Metrics -->
+            <div class="stage" id="stage9">
+                <h2>📊 Security Success Metrics</h2>
+                
+                <div class="framework-box">
+                    <div class="framework-title">📈 Measuring Security Effectiveness</div>
+                    <p><strong>"You can't improve what you don't measure"</strong> - Security is only as good as your ability to measure and improve it</p>
+                </div>
+
+                <div class="metric-category">
+                    <h3>🎯 Risk Reduction Metrics</h3>
+                    <ul>
+                        <li><strong>Vulnerability Exposure Time</strong> - Average days from discovery to patch (target: <7 days)</li>
+                        <li><strong>Security Incident Frequency</strong> - Incidents per month/quarter (trending down)</li>
+                        <li><strong>Attack Success Rate</strong> - Percentage of attacks causing damage (target: <1%)</li>
+                        <li><strong>Mean Time to Detection (MTTD)</strong> - How quickly we spot threats (target: <24 hours)</li>
+                        <li><strong>Mean Time to Response (MTTR)</strong> - How quickly we contain threats (target: <1 hour)</li>
+                    </ul>
+                </div>
+
+                <div class="metric-category">
+                    <h3>💼 Business Impact Metrics</h3>
+                    <ul>
+                        <li><strong>Revenue Protection</strong> - Prevented fraud losses, avoided downtime costs</li>
+                        <li><strong>Customer Trust</strong> - Retention rates, NPS scores, brand reputation surveys</li>
+                        <li><strong>Compliance Posture</strong> - Audit findings, regulatory violations (target: zero)</li>
+                        <li><strong>Insurance Premiums</strong> - Cyber insurance costs (should decrease with better security)</li>
+                        <li><strong>Market Confidence</strong> - Stock price stability during security events</li>
+                    </ul>
+                </div>
+
+                <div class="metric-category">
+                    <h3>⚙️ Operational Efficiency Metrics</h3>
+                    <ul>
+                        <li><strong>Security Automation Rate</strong> - Percentage of security tasks automated (target: >80%)</li>
+                        <li><strong>False Positive Rate</strong> - Security alerts that aren't real threats (target: <5%)</li>
+                        <li><strong>Security Team Productivity</strong> - Incidents handled per security engineer</li>
+                        <li><strong>Developer Velocity</strong> - Deployment speed with security gates included</li>
+                        <li><strong>Cost per Security Event</strong> - Total security spending / events prevented</li>
+                    </ul>
+                </div>
+
+                <div class="metric-category">
+                    <h3>🎓 Security Maturity Metrics</h3>
+                    <ul>
+                        <li><strong>Security Awareness</strong> - Employee phishing simulation success rates</li>
+                        <li><strong>Proactive vs Reactive</strong> - Threats blocked proactively vs discovered reactively</li>
+                        <li><strong>Zero-Trust Adoption</strong> - Percentage of systems using zero-trust principles</li>
+                        <li><strong>Recovery Capability</strong> - Business continuity exercise success rates</li>
+                        <li><strong>Third-party Risk</strong> - Vendor security assessment completion rates</li>
+                    </ul>
+                </div>
+
+                <div class="metric-category">
+                    <h3>👔 Executive Dashboard (Board-Level Metrics)</h3>
+                    <ul>
+                        <li><strong>Overall Risk Score</strong> - Quantified security posture (trending improvement)</li>
+                        <li><strong>Regulatory Compliance</strong> - 100% compliance across all jurisdictions</li>
+                        <li><strong>Security ROI</strong> - Security investment vs. prevented losses ratio</li>
+                        <li><strong>Cyber Insurance Claims</strong> - Number and cost of claims filed</li>
+                        <li><strong>Business Resilience</strong> - Time to restore operations after incidents</li>
+                    </ul>
+                </div>
+
+                <div class="metric-category">
+                    <h3>🔄 Continuous Improvement Process</h3>
+                    <ul>
+                        <li><strong>Quarterly Security Reviews</strong> - Metrics-driven strategy adjustments</li>
+                        <li><strong>Industry Benchmarking</strong> - Compare against peers and standards</li>
+                        <li><strong>Maturity Assessments</strong> - Annual evaluations against NIST, ISO frameworks</li>
+                        <li><strong>Threat Landscape Evolution</strong> - Adapting metrics as threats change</li>
+                        <li><strong>Stakeholder Feedback</strong> - Customer and employee security satisfaction</li>
+                    </ul>
+                </div>
+
+                <div class="highlight">
+                    <strong>🎯 Key Success Principle:</strong><br>
+                    Security success isn't about preventing all attacks - it's about building resilient systems that minimize business impact when attacks occur. Focus on metrics that demonstrate business value, not just technical achievements.
+                </div>
+
+                <div class="example-scenario">
+                    <h3>📈 Metrics in Action</h3>
+                    <p><strong>Interview Question:</strong> "How do you prove to the CEO that your security investment is working?"</p>
+                    <p><strong>Your Answer:</strong> "I show three key metrics: 1) Risk reduction - 90% fewer successful attacks than industry average, 2) Business protection - $2M in prevented fraud losses last year, and 3) Operational efficiency - Security incidents resolved 50% faster through automation. The total ROI is 300% - every $1 invested in security saves $3 in prevented losses."</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" id="prevBtn" onclick="previousStage()" disabled>← Previous</button>
+            <button class="control-btn" id="nextBtn" onclick="nextStage()">Next →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStage = 0;
+        const totalStages = 10;
+
+        function showStage(stageIndex) {
+            // Hide all stages
+            const stages = document.querySelectorAll('.stage');
+            stages.forEach(stage => stage.classList.remove('active'));
+
+            // Hide all nav buttons active state
+            const navBtns = document.querySelectorAll('.nav-btn');
+            navBtns.forEach(btn => btn.classList.remove('active'));
+
+            // Show selected stage
+            const targetStage = document.getElementById(`stage${stageIndex}`);
+            if (targetStage) {
+                targetStage.classList.add('active');
+                navBtns[stageIndex].classList.add('active');
+                currentStage = stageIndex;
+            }
+
+            // Update progress bar
+            updateProgressBar();
+
+            // Update navigation buttons
+            updateNavigationButtons();
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function nextStage() {
+            if (currentStage < totalStages - 1) {
+                showStage(currentStage + 1);
+            }
+        }
+
+        function previousStage() {
+            if (currentStage > 0) {
+                showStage(currentStage - 1);
+            }
+        }
+
+        function updateProgressBar() {
+            const progressFill = document.getElementById('progressFill');
+            const progressPercentage = ((currentStage + 1) / totalStages) * 100;
+            progressFill.style.width = progressPercentage + '%';
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            prevBtn.disabled = currentStage === 0;
+            nextBtn.disabled = currentStage === totalStages - 1;
+
+            if (currentStage === totalStages - 1) {
+                nextBtn.textContent = 'Complete! 🎉';
+            } else {
+                nextBtn.textContent = 'Next →';
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowRight' || event.key === ' ') {
+                event.preventDefault();
+                nextStage();
+            } else if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                previousStage();
+            }
+        });
+
+        // Initialize
+        updateProgressBar();
+        updateNavigationButtons();
+    </script>
+</body>
+</html>
