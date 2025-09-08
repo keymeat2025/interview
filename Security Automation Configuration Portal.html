@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Automation Configuration Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e40af, #1e3a8a);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 20px;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-number {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .step.completed .step-number {
+            background: #10b981;
+            color: white;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .config-section {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .config-section:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .customers-icon { background: #dbeafe; }
+        .controls-icon { background: #dcfce7; }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-select, .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-select:focus, .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .checkbox-item:hover {
+            background: #f1f5f9;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+        }
+
+        .control-code {
+            font-weight: 700;
+            color: #3730a3;
+            margin-right: 8px;
+        }
+
+        .control-description {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .selected-config {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #e5e7eb;
+            margin-bottom: 30px;
+        }
+
+        .config-preview {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .status-indicator {
+            display: none;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .status-error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .status-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+
+        @media (max-width: 768px) {
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Security Automation Configuration Portal</h1>
+            <p>Configure and deploy security automation across your infrastructure</p>
+        </div>
+
+        <div class="main-content">
+            <div class="step-indicator">
+                <div class="step active">
+                    <div class="step-number">1</div>
+                    <span>Configure</span>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <span>Generate</span>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <span>Deploy</span>
+                </div>
+            </div>
+
+            <div class="config-grid">
+                <!-- Customer Selection -->
+                <div class="config-section">
+                    <div class="section-title">
+                        <div class="section-icon customers-icon">👥</div>
+                        Customer Selection
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Select Customer Environment</label>
+                        <select class="form-select" id="customerSelect" onchange="updateCustomerInfo()">
+                            <option value="">-- Select Customer --</option>
+                            <option value="customer_a">Customer A (Banking)</option>
+                            <option value="customer_b">Customer B (Healthcare)</option>
+                            <option value="customer_c">Customer C (Fintech)</option>
+                            <option value="customer_d">Customer D (E-commerce)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Target Environment</label>
+                        <select class="form-select" id="environmentSelect">
+                            <option value="staging">Staging</option>
+                            <option value="production">Production</option>
+                            <option value="development">Development</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Business Justification</label>
+                        <input type="text" class="form-input" id="businessJustification" 
+                               placeholder="e.g., Monthly compliance audit, Security baseline update">
+                    </div>
+                </div>
+
+                <!-- Security Controls Selection -->
+                <div class="config-section">
+                    <div class="section-title">
+                        <div class="section-icon controls-icon">🛡️</div>
+                        Security Controls (ISO 27001:2022)
+                    </div>
+                    
+                    <div class="checkbox-group" id="securityControls">
+                        <!-- Theme A: Organizational Controls -->
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="A81" value="A.8.1">
+                            <label for="A81">
+                                <span class="control-code">A.8.1</span>
+                                <span>Asset Inventory Management</span>
+                                <div class="control-description">Automated discovery and tracking of infrastructure assets</div>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="A85" value="A.8.5">
+                            <label for="A85">
+                                <span class="control-code">A.8.5</span>
+                                <span>Information Classification</span>
+                                <div class="control-description">Automated data and system classification</div>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="A112" value="A.11.2">
+                            <label for="A112">
+                                <span class="control-code">A.11.2</span>
+                                <span>Supplier Security Management</span>
+                                <div class="control-description">Third-party integration security validation</div>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="A121" value="A.12.1">
+                            <label for="A121">
+                                <span class="control-code">A.12.1</span>
+                                <span>Security Event Reporting</span>
+                                <div class="control-description">Automated security event detection and alerting</div>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="A123" value="A.12.3">
+                            <label for="A123">
+                                <span class="control-code">A.12.3</span>
+                                <span>Incident Response Automation</span>
+                                <div class="control-description">Automated incident response workflows</div>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="A131" value="A.13.1">
+                            <label for="A131">
+                                <span class="control-code">A.13.1</span>
+                                <span>Project Security Integration</span>
+                                <div class="control-description">Security gates in CI/CD pipelines</div>
+                            </label>
+                        </div>
+
+                        <!-- Theme D: Technological Controls -->
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="D61" value="D.6.1">
+                            <label for="D61">
+                                <span class="control-code">D.6.1</span>
+                                <span>Vulnerability Management</span>
+                                <div class="control-description">Continuous vulnerability scanning and remediation</div>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="D81" value="D.8.1">
+                            <label for="D81">
+                                <span class="control-code">D.8.1</span>
+                                <span>Network Security Controls</span>
+                                <div class="control-description">Firewall automation and network monitoring</div>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="D83" value="D.8.3">
+                            <label for="D83">
+                                <span class="control-code">D.8.3</span>
+                                <span>Network Segregation</span>
+                                <div class="control-description">Environment isolation and access controls</div>
+                            </label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="D23" value="D.2.3">
+                            <label for="D23">
+                                <span class="control-code">D.2.3</span>
+                                <span>Privileged Access Management</span>
+                                <div class="control-description">Automated privileged account monitoring</div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuration Preview -->
+            <div class="selected-config">
+                <div class="section-title">
+                    <div class="section-icon" style="background: #f3e8ff;">⚙️</div>
+                    Generated Configuration
+                </div>
+                
+                <div class="config-preview" id="configPreview">
+# Generated Security Automation Configuration
+# Select customer and controls to see configuration preview
+                </div>
+                
+                <div class="status-indicator" id="statusIndicator"></div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="generateConfig()">
+                        📄 Generate Config Files
+                    </button>
+                    
+                    <button class="btn btn-secondary" onclick="downloadConfig()">
+                        💾 Download Configuration
+                    </button>
+                    
+                    <button class="btn btn-success" onclick="triggerCICD()">
+                        🚀 Trigger CI/CD Pipeline
+                    </button>
+                    
+                    <button class="btn btn-warning" onclick="triggerAnsible()">
+                        ⚡ Execute Ansible Automation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Customer data matrix
+        const customerMatrix = {
+            customer_a: {
+                name: "Customer A (Banking)",
+                industry: "Banking",
+                firewall_devices: [
+                    { vendor: "cisco", ip: "192.168.1.1", zone: "payment_processing" },
+                    { vendor: "fortinet", ip: "192.168.1.2", zone: "core_banking" }
+                ],
+                compliance_requirements: ["PCI-DSS", "RBI", "ISO27001"],
+                security_zones: ["payment_processing", "core_banking", "customer_data"],
+                data_classification: "highly_confidential"
+            },
+            customer_b: {
+                name: "Customer B (Healthcare)",
+                industry: "Healthcare",
+                firewall_devices: [
+                    { vendor: "palo_alto", ip: "10.0.1.1", zone: "patient_data" },
+                    { vendor: "cisco", ip: "10.0.1.2", zone: "clinical_systems" }
+                ],
+                compliance_requirements: ["HIPAA", "SOC2", "ISO27001"],
+                security_zones: ["patient_data", "clinical_systems", "research"],
+                data_classification: "confidential"
+            },
+            customer_c: {
+                name: "Customer C (Fintech)",
+                industry: "Fintech",
+                firewall_devices: [
+                    { vendor: "fortinet", ip: "172.16.1.1", zone: "api_gateway" },
+                    { vendor: "cisco", ip: "172.16.1.2", zone: "transaction_processing" }
+                ],
+                compliance_requirements: ["PCI-DSS", "GDPR", "ISO27001"],
+                security_zones: ["api_gateway", "transaction_processing", "customer_portal"],
+                data_classification: "confidential"
+            },
+            customer_d: {
+                name: "Customer D (E-commerce)",
+                industry: "E-commerce",
+                firewall_devices: [
+                    { vendor: "aws_waf", ip: "web", zone: "web_tier" },
+                    { vendor: "cisco", ip: "10.1.1.1", zone: "application_tier" }
+                ],
+                compliance_requirements: ["PCI-DSS", "GDPR", "SOC2"],
+                security_zones: ["web_tier", "application_tier", "database_tier"],
+                data_classification: "internal"
+            }
+        };
+
+        // Security controls definitions
+        const securityControls = {
+            "A.8.1": {
+                name: "Asset Inventory Management",
+                automation_type: "asset_discovery",
+                scripts: ["asset_inventory_scanner.py", "infrastructure_mapper.py"]
+            },
+            "A.8.5": {
+                name: "Information Classification",
+                automation_type: "data_classification",
+                scripts: ["data_classifier.py", "sensitivity_analyzer.py"]
+            },
+            "A.11.2": {
+                name: "Supplier Security Management",
+                automation_type: "supplier_validation",
+                scripts: ["third_party_validator.py", "api_security_checker.py"]
+            },
+            "A.12.1": {
+                name: "Security Event Reporting",
+                automation_type: "siem_integration",
+                scripts: ["siem_connector.py", "alert_manager.py"]
+            },
+            "A.12.3": {
+                name: "Incident Response Automation",
+                automation_type: "incident_response",
+                scripts: ["incident_responder.py", "soar_orchestrator.py"]
+            },
+            "A.13.1": {
+                name: "Project Security Integration",
+                automation_type: "cicd_security",
+                scripts: ["security_gate_validator.py", "pipeline_scanner.py"]
+            },
+            "D.6.1": {
+                name: "Vulnerability Management",
+                automation_type: "vulnerability_scanning",
+                scripts: ["vulnerability_scanner.py", "patch_manager.py"]
+            },
+            "D.8.1": {
+                name: "Network Security Controls",
+                automation_type: "network_security",
+                scripts: ["firewall_manager.py", "network_monitor.py"]
+            },
+            "D.8.3": {
+                name: "Network Segregation",
+                automation_type: "network_segregation",
+                scripts: ["network_segmentation.py", "access_controller.py"]
+            },
+            "D.2.3": {
+                name: "Privileged Access Management",
+                automation_type: "pam_automation",
+                scripts: ["privileged_access_monitor.py", "account_validator.py"]
+            }
+        };
+
+        function updateCustomerInfo() {
+            const selectedCustomer = document.getElementById('customerSelect').value;
+            if (selectedCustomer && customerMatrix[selectedCustomer]) {
+                updateConfigPreview();
+            }
+        }
+
+        function updateConfigPreview() {
+            const selectedCustomer = document.getElementById('customerSelect').value;
+            const selectedEnvironment = document.getElementById('environmentSelect').value;
+            const businessJustification = document.getElementById('businessJustification').value;
+            const selectedControls = Array.from(document.querySelectorAll('#securityControls input:checked')).map(cb => cb.value);
+
+            if (!selectedCustomer) {
+                document.getElementById('configPreview').textContent = '# Select customer and controls to see configuration preview';
+                return;
+            }
+
+            const customer = customerMatrix[selectedCustomer];
+            const config = generateYAMLConfig(customer, selectedEnvironment, businessJustification, selectedControls);
+            document.getElementById('configPreview').textContent = config;
+        }
+
+        function generateYAMLConfig(customer, environment, justification, controls) {
+            const controlsConfig = controls.map(controlCode => {
+                const control = securityControls[controlCode];
+                return `  - control_code: "${controlCode}"
+    name: "${control.name}"
+    automation_type: "${control.automation_type}"
+    scripts: ${JSON.stringify(control.scripts)}`;
+            }).join('\n');
+
+            return `# Security Automation Configuration
+# Generated: ${new Date().toISOString()}
+
+customer_info:
+  name: "${customer.name}"
+  industry: "${customer.industry}"
+  environment: "${environment}"
+  data_classification: "${customer.data_classification}"
+
+business_context:
+  justification: "${justification || 'Security automation deployment'}"
+  compliance_requirements: ${JSON.stringify(customer.compliance_requirements)}
+  security_zones: ${JSON.stringify(customer.security_zones)}
+
+infrastructure:
+  firewall_devices: ${JSON.stringify(customer.firewall_devices, null, 4).replace(/^/gm, '    ').trim()}
+
+security_controls:
+${controlsConfig}
+
+automation_config:
+  cicd_pipeline: "security-automation-pipeline"
+  ansible_playbook: "main-security-automation.yml"
+  notification_channels: ["security_team", "ops_team"]
+  
+deployment_settings:
+  parallel_execution: true
+  rollback_enabled: true
+  validation_required: true`;
+        }
+
+        function generateConfig() {
+            const selectedCustomer = document.getElementById('customerSelect').value;
+            const selectedControls = Array.from(document.querySelectorAll('#securityControls input:checked'));
+
+            if (!selectedCustomer) {
+                showStatus('error', 'Please select a customer before generating configuration');
+                return;
+            }
+
+            if (selectedControls.length === 0) {
+                showStatus('error', 'Please select at least one security control');
+                return;
+            }
+
+            // Update step indicator
+            document.querySelector('.step:nth-child(1)').classList.add('completed');
+            document.querySelector('.step:nth-child(2)').classList.add('active');
+
+            showStatus('success', `Configuration generated successfully for ${customerMatrix[selectedCustomer].name} with ${selectedControls.length} security controls`);
+            
+            updateConfigPreview();
+        }
+
+        function downloadConfig() {
+            const config = document.getElementById('configPreview').textContent;
+            if (config.includes('Select customer')) {
+                showStatus('error', 'Generate configuration first before downloading');
+                return;
+            }
+
+            const blob = new Blob([config], { type: 'text/yaml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'security-automation-config.yml';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showStatus('success', 'Configuration file downloaded successfully');
+        }
+
+        function triggerCICD() {
+            const selectedCustomer = document.getElementById('customerSelect').value;
+            if (!selectedCustomer) {
+                showStatus('error', 'Please select a customer and generate configuration first');
+                return;
+            }
+
+            // Update step indicator
+            document.querySelector('.step:nth-child(2)').classList.add('completed');
+            document.querySelector('.step:nth-child(3)').classList.add('active');
+
+            showStatus('info', 'Triggering CI/CD pipeline...');
+
+            // Simulate API call to CI/CD system
+            setTimeout(() => {
+                const pipelineId = 'SEC-' + Math.floor(Math.random() * 10000);
+                showStatus('success', `CI/CD Pipeline triggered successfully! Pipeline ID: ${pipelineId}. View progress in GitLab/GitHub Actions.`);
+            }, 2000);
+        }
+
+        function triggerAnsible() {
+            const selectedCustomer = document.getElementById('customerSelect').value;
+            if (!selectedCustomer) {
+                showStatus('error', 'Please select a customer and generate configuration first');
+                return;
+            }
+
+            showStatus('info', 'Executing Ansible automation...');
+
+            // Simulate Ansible Tower API call
+            setTimeout(() => {
+                const jobId = 'ANSIBLE-' + Math.floor(Math.random() * 10000);
+                showStatus('success', `Ansible automation started successfully! Job ID: ${jobId}. Monitor progress in Ansible Tower.`);
+            }, 1500);
+        }
+
+        function showStatus(type, message) {
+            const indicator = document.getElementById('statusIndicator');
+            indicator.className = `status-indicator status-${type}`;
+            indicator.textContent = message;
+            indicator.style.display = 'block';
+
+            // Auto-hide after 5 seconds for success/info messages
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    indicator.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Add event listeners to checkboxes to update preview
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('#securityControls input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateConfigPreview);
+            });
+
+            document.getElementById('environmentSelect').addEventListener('change', updateConfigPreview);
+            document.getElementById('businessJustification').addEventListener('input', updateConfigPreview);
+        });
+    </script>
+</body>
+</html>
