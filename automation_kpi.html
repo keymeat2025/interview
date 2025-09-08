@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISO 27001:2022 Security Automation Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .meta-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .meta-card {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .meta-card strong {
+            color: #1e293b;
+        }
+
+        .themes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(650px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .theme-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .theme-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .theme-a { border-color: #10b981; }
+        .theme-b { border-color: #f59e0b; }
+        .theme-c { border-color: #8b5cf6; }
+        .theme-d { border-color: #ef4444; }
+
+        .theme-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .theme-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin-right: 15px;
+        }
+
+        .theme-a .theme-icon { background: #10b981; }
+        .theme-b .theme-icon { background: #f59e0b; }
+        .theme-c .theme-icon { background: #8b5cf6; }
+        .theme-d .theme-icon { background: #ef4444; }
+
+        .theme-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .control-item {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid;
+        }
+
+        .theme-a .control-item { border-left-color: #10b981; }
+        .theme-b .control-item { border-left-color: #f59e0b; }
+        .theme-c .control-item { border-left-color: #8b5cf6; }
+        .theme-d .control-item { border-left-color: #ef4444; }
+
+        .control-code {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #3730a3;
+            margin-bottom: 5px;
+        }
+
+        .control-name {
+            font-size: 0.95rem;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .kpi-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .kpi-trend {
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .trend-up {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .trend-stable {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .use-cases {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .use-cases h2 {
+            color: #1e293b;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .use-case-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .use-case-card {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 6px solid;
+        }
+
+        .banking { border-left-color: #059669; }
+        .network { border-left-color: #dc2626; }
+        .secops { border-left-color: #7c3aed; }
+
+        .use-case-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #1e293b;
+        }
+
+        .metrics-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .summary-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .summary-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .compliance-status {
+            background: #10b981;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .themes-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>ISO 27001:2022 Security Automation Dashboard</h1>
+            <p>Comprehensive view of security controls across Banking, Network Security & SecOps automation</p>
+            <span class="compliance-status">COMPLIANT</span>
+        </div>
+
+        <div class="meta-info">
+            <div class="meta-card">
+                <strong>Reporting Period:</strong> Q1 2025
+            </div>
+            <div class="meta-card">
+                <strong>Last Updated:</strong> March 15, 2025
+            </div>
+            <div class="meta-card">
+                <strong>Coverage:</strong> 3 Business Units
+            </div>
+            <div class="meta-card">
+                <strong>Automation Level:</strong> 94.2%
+            </div>
+        </div>
+
+        <div class="themes-grid">
+            <!-- Theme A: Organizational Controls -->
+            <div class="theme-card theme-a">
+                <div class="theme-header">
+                    <div class="theme-icon">🏢</div>
+                    <div class="theme-title">Theme A: Organizational Controls</div>
+                </div>
+                <div class="controls-grid">
+                    <div class="control-item">
+                        <div class="control-code">A.8.1</div>
+                        <div class="control-name">Asset Inventory</div>
+                        <div class="kpi-value">
+                            <span class="kpi-number" style="color: #10b981;">2,847</span>
+                            <span class="kpi-trend trend-up">+12%</span>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-code">A.8.5</div>
+                        <div class="control-name">Information Classification</div>
+                        <div class="kpi-value">
+                            <span class="kpi-number" style="color: #10b981;">100%</span>
+                            <span class="kpi-trend trend-stable">Stable</span>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-code">A.11.2</div>
+                        <div class="control-name">Supplier Security</div>
+                        <div class="kpi-value">
+                            <span class="kpi-number" style="color: #10b981;">47</span>
+                            <span class="kpi-trend trend-up">+3%</span>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-code">A.12.1</div>
+                        <div class="control-name">Security Event Reporting</div>
+                        <div class="kpi-value">
+                            <span class="kpi-number" style="color: #10b981;">99.8%</span>
+                            <span class="kpi-trend trend-up">+0.3%</span>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-code">A.12.3</div>
+                        <div class="control-name">Incident Response</div>
+                        <div class="kpi-value">
+                            <span class="kpi-number" style="color: #10b981;">4.2min</span>
+                            <span class="kpi-trend trend-up">-15%</span>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-code">A.13.1</div>
+                        <div class="control-name">Project Security</div>
+                        <div class="kpi-value">
+                            <span class="kpi-number" style="color: #10b981;">100%</span>
+                            <span class="kpi-trend trend-stable">Stable</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Theme D: Technological Controls -->
+            <div class="theme-card theme-d">
+                <div class="theme-header">
+                    <div class="theme-icon">⚡</div>
+                    <div class="theme-title">Theme D: Technological Controls</div>
+                </div>
+                <div class="controls-grid">
+                    <div class="control-item">
+                        <div class="control-code">D.6.1</div>
+                        <div class="control-name">Vulnerability Management</div>
+                        <div class="kpi-value">
+                            <span class="kpi-number" style="color: #ef4444;">99.2%</span>
+                            <span class="kpi-trend trend-up">+2.1%</span>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-code">D.8.1</div>
+                        <div class="control-name">Network Controls</div>
+                        <div class="kpi-value">
+                            <span class="kpi-number" style="color: #ef4444;">100%</span>
+                            <span class="kpi-trend trend-stable">Stable</span>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-code">D.8.3</div>
+                        <div class="control-name">Network Segregation</div>
+                        <div class="kpi-value">
+                            <span class="kpi-number" style="color: #ef4444;">100%</span>
+                            <span class="kpi-trend trend-stable">Stable</span>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-code">D.2.3</div>
+                        <div class="control-name">Privileged Access</div>
+                        <div class="kpi-value">
+                            <span class="kpi-number" style="color: #ef4444;">98.9%</span>
+                            <span class="kpi-trend trend-up">+1.2%</span>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-code">D.8.4</div>
+                        <div class="control-name">Connection Control</div>
+                        <div class="kpi-value">
+                            <span class="kpi-number" style="color: #ef4444;">1,247</span>
+                            <span class="kpi-trend trend-up">+89</span>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-code">D.6.3</div>
+                        <div class="control-name">Secure Engineering</div>
+                        <div class="kpi-value">
+                            <span class="kpi-number" style="color: #ef4444;">100%</span>
+                            <span class="kpi-trend trend-stable">Stable</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="use-cases">
+            <h2>Business Unit Performance</h2>
+            <div class="use-case-grid">
+                <div class="use-case-card banking">
+                    <div class="use-case-title">Banking Security Automation</div>
+                    <div class="metrics-row">
+                        <span>Monthly Key Rotations:</span>
+                        <strong>47 completed</strong>
+                    </div>
+                    <div class="metrics-row">
+                        <span>Transaction Impact:</span>
+                        <strong>99.99% uptime</strong>
+                    </div>
+                    <div class="metrics-row">
+                        <span>PCI Compliance:</span>
+                        <strong>COMPLIANT</strong>
+                    </div>
+                    <div class="metrics-row">
+                        <span>Daily Revenue Protected:</span>
+                        <strong>₹50+ crores</strong>
+                    </div>
+                    <div class="metrics-row">
+                        <span>HSM Integration:</span>
+                        <strong>100% automated</strong>
+                    </div>
+                </div>
+
+                <div class="use-case-card network">
+                    <div class="use-case-title">Network Security Automation</div>
+                    <div class="metrics-row">
+                        <span>Threat IPs Blocked:</span>
+                        <strong>1,247 this month</strong>
+                    </div>
+                    <div class="metrics-row">
+                        <span>Customer Firewalls:</span>
+                        <strong>156 managed</strong>
+                    </div>
+                    <div class="metrics-row">
+                        <span>Threat Feed Integration:</span>
+                        <strong>8 sources active</strong>
+                    </div>
+                    <div class="metrics-row">
+                        <span>Automation Coverage:</span>
+                        <strong>94.7% of configs</strong>
+                    </div>
+                    <div class="metrics-row">
+                        <span>Response Time:</span>
+                        <strong>2.3 minutes avg</strong>
+                    </div>
+                </div>
+
+                <div class="use-case-card secops">
+                    <div class="use-case-title">SecOps SIEM Automation</div>
+                    <div class="metrics-row">
+                        <span>Applications Integrated:</span>
+                        <strong>89 deployments</strong>
+                    </div>
+                    <div class="metrics-row">
+                        <span>Log Sources Active:</span>
+                        <strong>2,847 endpoints</strong>
+                    </div>
+                    <div class="metrics-row">
+                        <span>Alert Rules Deployed:</span>
+                        <strong>456 rules active</strong>
+                    </div>
+                    <div class="metrics-row">
+                        <span>SOC Visibility:</span>
+                        <strong>100% coverage</strong>
+                    </div>
+                    <div class="metrics-row">
+                        <span>Detection Time:</span>
+                        <strong>2.3 seconds avg</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-cards">
+            <div class="summary-card">
+                <div class="summary-number">94.2%</div>
+                <div class="summary-label">Overall Automation Level</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-number">99.8%</div>
+                <div class="summary-label">Security Event Coverage</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-number">4.2min</div>
+                <div class="summary-label">Mean Response Time</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-number">2,847</div>
+                <div class="summary-label">Assets Under Management</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
